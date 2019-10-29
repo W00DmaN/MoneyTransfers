@@ -20,6 +20,8 @@ public class UserDaoImpl implements UserDao {
     private static final String CREATE_USER = "INSERT INTO user (id, name) VALUES (?, ?)";
     private static final String GET_ALL = "SELECT id, name FROM user";
     private static final String GET_BY_ID = "SELECT id, name FROM user WHERE id = ?";
+    private static final String DELETE_BY_ID = "DELETE FROM user WHERE id = ?";
+    private static final String DELETE_ALL = "DELETE FROM user";
 
     @Inject
     public UserDaoImpl(DataSourceFactory sourceFactory) {
@@ -54,6 +56,23 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    public void deleteById(long id) {
+        execute(DELETE_BY_ID, statement -> {
+            statement.setLong(1, id);
+            statement.execute();
+            return null;
+        });
+    }
+
+    @Override
+    public void deleteAll() {
+        execute(DELETE_ALL, statement -> {
+            statement.execute();
+            return null;
+        });
+    }
+
+    @Override
     public List<User> getAll() {
         return execute(GET_ALL, statement -> {
             statement.execute();
@@ -74,6 +93,7 @@ public class UserDaoImpl implements UserDao {
     private interface StatementCallable<T> {
         T call(PreparedStatement statement) throws SQLException;
     }
+
     private <T> T execute(String query, StatementCallable<T> callable) {
         try(Connection connection = sourceFactory.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(query);

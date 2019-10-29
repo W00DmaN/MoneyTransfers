@@ -36,4 +36,11 @@ public class UserServiceImpl implements UserService {
     public UserResponse getById(long id) {
         return UserMapper.adaprToResp(userDao.getUserById(id));
     }
+
+    @Override
+    public void deleteById(long id) {
+        userDao.deleteById(id);
+    }
+
+
 }

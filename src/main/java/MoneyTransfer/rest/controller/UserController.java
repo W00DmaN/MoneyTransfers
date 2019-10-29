@@ -41,6 +41,7 @@ public class UserController {
 
     @Delete(uri = "/{id}")
     public void deleteUser(Long id) {
+        userService.deleteById(id);
     }
 
 }

@@ -14,12 +14,6 @@
     <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
   </properties>
-  <repositories>
-    <repository>
-      <id>jcenter.bintray.com</id>
-      <url>https://jcenter.bintray.com</url>
-    </repository>
-  </repositories>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -32,6 +26,14 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.10</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- Micronaut -->
     <dependency>
       <groupId>io.micronaut</groupId>
       <artifactId>micronaut-inject</artifactId>
@@ -58,11 +60,19 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.199</version>
+    </dependency>
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>1.2.3</version>
       <scope>runtime</scope>
     </dependency>
+
+
+    <!-- Test -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -154,21 +164,26 @@
               <arg>-parameters</arg>
             </compilerArgs>
             <annotationProcessorPaths>
-                  <path>
+                <path>
+                    <groupId>org.projectlombok</groupId>
+                    <artifactId>lombok</artifactId>
+                    <version>1.16.20</version>
+                </path>
+                <path>
                     <groupId>io.micronaut</groupId>
                     <artifactId>micronaut-inject-java</artifactId>
                     <version>${micronaut.version}</version>
-                  </path>
-                  <path>
+                </path>
+                <path>
                     <groupId>io.micronaut</groupId>
                     <artifactId>micronaut-validation</artifactId>
                     <version>${micronaut.version}</version>
-                  </path>
-                  <path>
+                </path>
+                <path>
                     <groupId>io.micronaut.configuration</groupId>
                     <artifactId>micronaut-openapi</artifactId>
                     <version>1.1.1</version>
-                  </path>                  
+                </path>
             </annotationProcessorPaths>
           </configuration>
           <executions>

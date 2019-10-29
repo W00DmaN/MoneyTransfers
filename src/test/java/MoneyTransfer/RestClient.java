@@ -15,11 +15,15 @@
  */
 package MoneyTransfer;
 
+import MoneyTransfer.rest.model.req.CreateUserRequest;
+import MoneyTransfer.rest.model.res.UserResponse;
 import io.micronaut.http.annotation.Get;
+import io.micronaut.http.annotation.Post;
 import io.micronaut.http.client.annotation.Client;
 import io.reactivex.Single;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 /**
  * @author graemerocher
@@ -29,4 +33,10 @@ import javax.validation.constraints.NotBlank;
 public interface RestClient {
     @Get("/health")
     Single<String> health();
+
+    @Post("/user")
+    Single<UserResponse> createUser(CreateUserRequest request);
+
+    @Get("/user/all")
+    Single<List<UserResponse>> getAllUsers();
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. 
  */
-package MoneyTransfer;
+package MoneyTransfer.rest.controller;
 
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
@@ -21,12 +21,6 @@ import io.micronaut.http.annotation.Get;
 import io.micronaut.validation.Validated;
 import io.reactivex.Single;
 
-import javax.validation.constraints.NotBlank;
-
-/**
- * @author Graeme Rocher
- * @since 1.0
- */
 @Controller
 @Validated
 public class SystemController {

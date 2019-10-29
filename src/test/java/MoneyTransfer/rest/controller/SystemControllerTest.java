@@ -1,7 +1,8 @@
-package MoneyTransfer;
+package MoneyTransfer.rest.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import MoneyTransfer.RestClient;
 import io.micronaut.test.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 

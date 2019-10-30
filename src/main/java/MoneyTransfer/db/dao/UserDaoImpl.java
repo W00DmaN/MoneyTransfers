@@ -6,6 +6,8 @@ import MoneyTransfer.db.model.User;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,9 +19,9 @@ import java.util.List;
 public class UserDaoImpl implements UserDao {
     private final DataSourceFactory sourceFactory;
 
-    private static final String CREATE_USER = "INSERT INTO user (id, name) VALUES (?, ?)";
-    private static final String GET_ALL = "SELECT id, name FROM user";
-    private static final String GET_BY_ID = "SELECT id, name FROM user WHERE id = ?";
+    private static final String CREATE_USER = "INSERT INTO user (id, name, cents) VALUES (?, ?, ?)";
+    private static final String GET_ALL = "SELECT id, name, cents FROM user";
+    private static final String GET_BY_ID = "SELECT id, name, cents FROM user WHERE id = ?";
     private static final String DELETE_BY_ID = "DELETE FROM user WHERE id = ?";
     private static final String DELETE_ALL = "DELETE FROM user";
 
@@ -33,6 +35,7 @@ public class UserDaoImpl implements UserDao {
         return execute(CREATE_USER, statement -> {
             statement.setLong(1,user.getId());
             statement.setString(2,user.getName());
+            statement.setBigDecimal(3, user.getCents());
             statement.execute();
             return user;
         });
@@ -48,7 +51,8 @@ public class UserDaoImpl implements UserDao {
                 if (resultSet.next()) {
                     long userId = resultSet.getLong("id");
                     String userName = resultSet.getString("name");
-                    result = new User(userId, userName);
+                    BigDecimal cents = resultSet.getBigDecimal("cents");
+                    result = new User(userId, userName,cents);
                 } else {
                     throw new UserNotFoundException("User with id="+id+" not found");
                 }
@@ -83,7 +87,8 @@ public class UserDaoImpl implements UserDao {
                 while (resultSet.next()) {
                     long id = resultSet.getLong("id");
                     String name = resultSet.getString("name");
-                    result.add(new User(id,name));
+                    BigDecimal bigDecimal = resultSet.getBigDecimal("cents");
+                    result.add(new User(id,name,bigDecimal));
                 }
             }
             return result;

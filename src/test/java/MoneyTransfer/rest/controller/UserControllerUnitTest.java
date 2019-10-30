@@ -5,6 +5,7 @@ import MoneyTransfer.rest.model.res.UserResponse;
 import MoneyTransfer.service.UserService;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class UserControllerUnitTest {
     private UserService userService = mock(UserService.class);
     private UserController controller = new UserController(userService);
 
-    private UserResponse userResponse = new UserResponse(1L, "Tim");
+    private UserResponse userResponse = new UserResponse(1L, "Tim", BigDecimal.ZERO);
 
     @Test
     void testGetUserById() {

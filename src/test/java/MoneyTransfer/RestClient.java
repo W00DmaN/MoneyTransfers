@@ -17,6 +17,7 @@ package MoneyTransfer;
 
 import MoneyTransfer.rest.model.req.CreateUserRequest;
 import MoneyTransfer.rest.model.res.UserResponse;
+import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.client.annotation.Client;
@@ -39,4 +40,10 @@ public interface RestClient {
 
     @Get("/user/all")
     Single<List<UserResponse>> getAllUsers();
+
+    @Get("/user/{id}")
+    Single<UserResponse> getUserById(long id);
+
+    @Delete("/user/{id}")
+    Single<Void> deleteUserById(long id);
 }

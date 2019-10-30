@@ -1,7 +1,7 @@
 package MoneyTransfer.db.dao;
 
 import MoneyTransfer.db.DataSourceFactory;
-import MoneyTransfer.db.exception.UserDaoException;
+import MoneyTransfer.db.exception.UserNotFoundException;
 import MoneyTransfer.db.model.User;
 
 import javax.inject.Inject;
@@ -43,12 +43,14 @@ public class UserDaoImpl implements UserDao {
         return execute(GET_BY_ID , statement -> {
             statement.setLong(1, id);
             statement.execute();
-            User result = null;
+            User result;
             try (ResultSet resultSet = statement.getResultSet()) {
                 if (resultSet.next()) {
                     long userId = resultSet.getLong("id");
                     String userName = resultSet.getString("name");
                     result = new User(userId, userName);
+                } else {
+                    throw new UserNotFoundException("User with id="+id+" not found");
                 }
             }
             return  result;
@@ -99,7 +101,7 @@ public class UserDaoImpl implements UserDao {
             PreparedStatement statement = connection.prepareStatement(query);
             return callable.call(statement);
         } catch (SQLException e) {
-            throw new UserDaoException(e);
+            throw new UserNotFoundException(e);
         }
     }
 }

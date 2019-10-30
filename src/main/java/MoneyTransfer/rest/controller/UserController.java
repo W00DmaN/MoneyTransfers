@@ -1,9 +1,9 @@
 package MoneyTransfer.rest.controller;
 
-import MoneyTransfer.db.dao.UserDao;
 import MoneyTransfer.rest.model.req.CreateUserRequest;
 import MoneyTransfer.rest.model.res.UserResponse;
 import MoneyTransfer.service.UserService;
+import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
@@ -25,8 +25,8 @@ public class UserController {
     }
 
     @Post
-    public UserResponse createUser(CreateUserRequest request){
-        return userService.createUser(request);
+    public HttpResponse<UserResponse> createUser(CreateUserRequest request){
+        return HttpResponse.created(userService.createUser(request));
     }
 
     @Get(uri = "/all")

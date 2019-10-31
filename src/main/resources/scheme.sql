@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS user (
     id LONG PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    cents BIGINT DEFAULT 0
+    cents LONG DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS transactions(
     sender_id LONG NOT NULL,

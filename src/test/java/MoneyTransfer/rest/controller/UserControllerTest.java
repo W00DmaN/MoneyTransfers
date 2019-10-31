@@ -50,7 +50,7 @@ class UserControllerTest {
         List<UserResponse> result = restClient.getAllUsers().blockingGet();
 
         assertEquals(2, result.size());
-        assertTrue(result.contains(userResponse1));
+        assertTrue(result.contains(userResponse1), "getAllUser haven't user=" + userResponse1.toString());
         assertTrue(result.contains(userResponse2));
     }
 

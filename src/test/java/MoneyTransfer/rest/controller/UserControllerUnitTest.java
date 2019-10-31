@@ -17,7 +17,7 @@ public class UserControllerUnitTest {
     private UserService userService = mock(UserService.class);
     private UserController controller = new UserController(userService);
 
-    private UserResponse userResponse = new UserResponse(1L, "Tim", BigDecimal.ZERO);
+    private UserResponse userResponse = new UserResponse(1L, "Tim", 0l);
 
     @Test
     void testGetUserById() {

@@ -6,8 +6,6 @@ import MoneyTransfer.db.model.User;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,9 +31,9 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User createUser(User user) {
         return execute(CREATE_USER, statement -> {
-            statement.setLong(1,user.getId());
-            statement.setString(2,user.getName());
-            statement.setBigDecimal(3, user.getCents());
+            statement.setLong(1, user.getId());
+            statement.setString(2, user.getName());
+            statement.setLong(3, user.getCents());
             statement.execute();
             return user;
         });
@@ -43,21 +41,18 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User getUserById(long id) {
-        return execute(GET_BY_ID , statement -> {
+        return execute(GET_BY_ID, statement -> {
             statement.setLong(1, id);
             statement.execute();
             User result;
             try (ResultSet resultSet = statement.getResultSet()) {
                 if (resultSet.next()) {
-                    long userId = resultSet.getLong("id");
-                    String userName = resultSet.getString("name");
-                    BigDecimal cents = resultSet.getBigDecimal("cents");
-                    result = new User(userId, userName,cents);
+                    result = getUserFromResultSet(resultSet);
                 } else {
-                    throw new UserNotFoundException("User with id="+id+" not found");
+                    throw new UserNotFoundException("User with id=" + id + " not found");
                 }
             }
-            return  result;
+            return result;
         });
     }
 
@@ -83,18 +78,21 @@ public class UserDaoImpl implements UserDao {
         return execute(GET_ALL, statement -> {
             statement.execute();
             List<User> result = new ArrayList<>();
-            try (ResultSet resultSet = statement.getResultSet()){
+            try (ResultSet resultSet = statement.getResultSet()) {
                 while (resultSet.next()) {
-                    long id = resultSet.getLong("id");
-                    String name = resultSet.getString("name");
-                    BigDecimal bigDecimal = resultSet.getBigDecimal("cents");
-                    result.add(new User(id,name,bigDecimal));
+                    result.add(getUserFromResultSet(resultSet));
                 }
             }
             return result;
         });
     }
 
+    private User getUserFromResultSet(ResultSet resultSet) throws SQLException {
+        long id = resultSet.getLong("id");
+        String name = resultSet.getString("name");
+        long cents = resultSet.getLong("cents");
+        return new User(id, name, cents);
+    }
 
     @FunctionalInterface
     private interface StatementCallable<T> {
@@ -102,7 +100,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     private <T> T execute(String query, StatementCallable<T> callable) {
-        try(Connection connection = sourceFactory.getDataSource().getConnection()) {
+        try (Connection connection = sourceFactory.getDataSource().getConnection()) {
             PreparedStatement statement = connection.prepareStatement(query);
             return callable.call(statement);
         } catch (SQLException e) {

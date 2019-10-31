@@ -4,6 +4,7 @@ import MoneyTransfer.rest.model.req.CreateUserRequest;
 import MoneyTransfer.rest.model.res.UserResponse;
 import MoneyTransfer.service.UserService;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
@@ -40,8 +41,9 @@ public class UserController {
     }
 
     @Delete(uri = "/{id}")
-    public void deleteUser(Long id) {
+    public HttpResponse deleteUser(Long id) {
         userService.deleteById(id);
+        return HttpResponse.noContent();
     }
 
 }

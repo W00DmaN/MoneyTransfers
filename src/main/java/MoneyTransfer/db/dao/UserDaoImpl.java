@@ -1,6 +1,7 @@
 package MoneyTransfer.db.dao;
 
-import MoneyTransfer.db.DataSourceFactory;
+import MoneyTransfer.db.ConnectionAdaptor;
+import MoneyTransfer.db.exception.UserException;
 import MoneyTransfer.db.exception.UserNotFoundException;
 import MoneyTransfer.db.model.User;
 
@@ -10,32 +11,42 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class UserDaoImpl implements UserDao {
-    private final DataSourceFactory sourceFactory;
+    private final ConnectionAdaptor connectionAdaptor;
 
-    private static final String CREATE_USER = "INSERT INTO user (id, name, cents) VALUES (?, ?, ?)";
+    private static final String CREATE_USER = "INSERT INTO user (name, cents) VALUES (?, ?)";
     private static final String GET_ALL = "SELECT id, name, cents FROM user";
     private static final String GET_BY_ID = "SELECT id, name, cents FROM user WHERE id = ?";
     private static final String DELETE_BY_ID = "DELETE FROM user WHERE id = ?";
     private static final String DELETE_ALL = "DELETE FROM user";
+    private static final String UPDATE_USER = "UPDATE user SET name=?, cents=? WHERE id=?";
 
     @Inject
-    public UserDaoImpl(DataSourceFactory sourceFactory) {
-        this.sourceFactory = sourceFactory;
+    public UserDaoImpl(ConnectionAdaptor connectionAdaptor) {
+        this.connectionAdaptor = connectionAdaptor;
     }
 
     @Override
     public User createUser(User user) {
         return execute(CREATE_USER, statement -> {
-            statement.setLong(1, user.getId());
-            statement.setString(2, user.getName());
-            statement.setLong(3, user.getCents());
-            statement.execute();
-            return user;
+            statement.setString(1, user.getName());
+            statement.setLong(2, user.getCents());
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new UserException("Creating user failed, no rows affected.");
+            }
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return new User(generatedKeys.getLong(1), user.getName(), user.getCents());
+                } else {
+                    throw new UserException("Creating transfer failed, no ID obtained.");
+                }
+            }
         });
     }
 
@@ -49,7 +60,7 @@ public class UserDaoImpl implements UserDao {
                 if (resultSet.next()) {
                     result = getUserFromResultSet(resultSet);
                 } else {
-                    throw new UserNotFoundException("User with id=" + id + " not found");
+                    throw new UserNotFoundException(String.format("User with id = %s not found", id));
                 }
             }
             return result;
@@ -87,6 +98,18 @@ public class UserDaoImpl implements UserDao {
         });
     }
 
+    @Override
+    public User update(User user) {
+        return execute(UPDATE_USER, statement -> {
+            statement.setString(1, user.getName());
+            statement.setLong(2, user.getCents());
+            statement.setLong(3, user.getId());
+            statement.execute();
+            return user;
+        });
+    }
+
+
     private User getUserFromResultSet(ResultSet resultSet) throws SQLException {
         long id = resultSet.getLong("id");
         String name = resultSet.getString("name");
@@ -100,11 +123,11 @@ public class UserDaoImpl implements UserDao {
     }
 
     private <T> T execute(String query, StatementCallable<T> callable) {
-        try (Connection connection = sourceFactory.getDataSource().getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(query);
+        Connection connection = connectionAdaptor.getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             return callable.call(statement);
         } catch (SQLException e) {
-            throw new UserNotFoundException(e);
+            throw new UserException(e);
         }
     }
 }

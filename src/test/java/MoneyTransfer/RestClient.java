@@ -16,20 +16,19 @@
 package MoneyTransfer;
 
 import MoneyTransfer.rest.model.req.CreateUserRequest;
+import MoneyTransfer.rest.model.req.DepositUserRequest;
+import MoneyTransfer.rest.model.req.TransferRequest;
+import MoneyTransfer.rest.model.res.TransferResponse;
 import MoneyTransfer.rest.model.res.UserResponse;
 import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.Put;
 import io.micronaut.http.client.annotation.Client;
 import io.reactivex.Single;
 
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 
-/**
- * @author graemerocher
- * @since 1.0
- */
 @Client("/")
 public interface RestClient {
     @Get("/health")
@@ -46,4 +45,10 @@ public interface RestClient {
 
     @Delete("/user/{id}")
     Single<Void> deleteUserById(long id);
+
+    @Put("/user/{id}/deposit")
+    Single<UserResponse> addMoney(long id, DepositUserRequest depositUserRequest);
+
+    @Post("/transfer/money/from/{userFromId}/to/{userToId}")
+    Single<TransferResponse> transferMoney(long userFromId, long userToId, TransferRequest request);
 }

@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.UUID;
-
 @Getter
 @AllArgsConstructor
 @EqualsAndHashCode
@@ -17,7 +15,7 @@ public class User {
     private final int scaleForMoney = 2;
 
     public User(String name) {
-        this.id = UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+        this.id = -1l;
         this.name = name;
         this.cents = 0L;
     }

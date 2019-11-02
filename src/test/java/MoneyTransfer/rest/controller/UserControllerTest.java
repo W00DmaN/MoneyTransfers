@@ -1,21 +1,20 @@
 package MoneyTransfer.rest.controller;
 
 import MoneyTransfer.RestClient;
-import MoneyTransfer.db.dao.UserDao;
-import MoneyTransfer.db.exception.UserNotFoundException;
 import MoneyTransfer.rest.model.req.CreateUserRequest;
+import MoneyTransfer.rest.model.req.DepositUserRequest;
 import MoneyTransfer.rest.model.res.UserResponse;
+import MoneyTransfer.service.UserService;
 import io.micronaut.test.annotation.MicronautTest;
-import io.micronaut.test.annotation.MockBean;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
-
-import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MicronautTest
 class UserControllerTest {
@@ -23,11 +22,11 @@ class UserControllerTest {
     @Inject
     private RestClient restClient;
     @Inject
-    private UserDao userDao;
+    private UserService userService;
 
     @AfterEach
     void after(){
-        userDao.deleteAll();
+        userService.deleteAll();
     }
 
     @Test
@@ -78,5 +77,20 @@ class UserControllerTest {
         assertThrows(Exception.class, () -> {
             restClient.getUserById(response.getId()).blockingGet();
         });
+    }
+
+    @Test
+    void addMoney(){
+        String userName = "Tim_test";
+        CreateUserRequest request = new CreateUserRequest(userName);
+        UserResponse response = restClient.createUser(request).blockingGet();
+        assertEquals(0L, response.getCents());
+
+        long depositSumm = 100L;
+        DepositUserRequest depositUserRequest = new DepositUserRequest(depositSumm);
+        restClient.addMoney(response.getId(), depositUserRequest).blockingGet();
+
+        UserResponse result = restClient.getUserById(response.getId()).blockingGet();
+        assertEquals(depositSumm, result.getCents());
     }
 }

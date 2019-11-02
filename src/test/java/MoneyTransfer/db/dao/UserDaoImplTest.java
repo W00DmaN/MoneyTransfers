@@ -2,11 +2,14 @@ package MoneyTransfer.db.dao;
 
 import MoneyTransfer.db.model.User;
 import io.micronaut.test.annotation.MicronautTest;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MicronautTest
 class UserDaoImplTest {
@@ -14,8 +17,8 @@ class UserDaoImplTest {
     @Inject
     private UserDao userDao;
 
-    @BeforeEach
-    void before(){
+    @AfterEach
+    void afterTest() {
         userDao.deleteAll();
     }
 
@@ -27,12 +30,12 @@ class UserDaoImplTest {
     }
 
     @Test
-    void userGetById(){
+    void userGetById() {
         User user = new User("Test1");
         User user2 = new User("Test2");
 
-        userDao.createUser(user);
-        userDao.createUser(user2);
+        user = userDao.createUser(user);
+        user2 = userDao.createUser(user2);
 
         assertEquals(user.getName(), userDao.getUserById(user.getId()).getName());
         assertEquals(user2.getName(), userDao.getUserById(user2.getId()).getName());
@@ -42,12 +45,14 @@ class UserDaoImplTest {
     void getAll() {
         User user = new User("Tim_test");
         User user2 = new User("Tim1_test");
-        User user3 = new User("Tim2_test");
 
-        userDao.createUser(user);
-        userDao.createUser(user2);
-        userDao.createUser(user3);
+        user = userDao.createUser(user);
+        user2 = userDao.createUser(user2);
 
-        assertEquals(3, userDao.getAll().size());
+        List<User> results = userDao.getAll();
+
+        assertEquals(2, results.size());
+        assertTrue(results.contains(user));
+        assertTrue(results.contains(user2));
     }
 }

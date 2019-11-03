@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getAll() {
-        return new Transaction<>(connectionAdaptor, () -> userDao.getAll()).execute()
+        return new Transaction<>(connectionAdaptor, userDao::getAll).execute()
                 .stream().map(UserMapper::adaprToResp).collect(Collectors.toList());
     }
 
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse addMoney(long id, DepositUserRequest request) {
         return UserMapper.adaprToResp(
                 new Transaction<>(connectionAdaptor, () -> {
-                    User user = userDao.getUserById(id);
+                    User user = userDao.getUserByIdWithLock(id);
                     User updateUser = new User(user.getId(), user.getName(), user.getCents() + request.getCountCents());
                     userDao.update(updateUser);
                     return updateUser;

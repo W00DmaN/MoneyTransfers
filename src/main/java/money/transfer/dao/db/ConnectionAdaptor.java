@@ -23,7 +23,6 @@ public class ConnectionAdaptor {
         if (holder == null) {
             try {
                 holder = dataSource.getConnection();
-                holder.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             } catch (SQLException e) {
                 throw new MoneyTransferDaoException(e);
             }

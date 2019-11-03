@@ -44,6 +44,18 @@ class UserDaoImplTest {
     }
 
     @Test
+    void userGetByIdWithLock() {
+        User user = new User("Test1");
+        User user2 = new User("Test2");
+
+        user = userDao.createUser(user);
+        user2 = userDao.createUser(user2);
+
+        Assertions.assertEquals(user.getName(), userDao.getUserByIdWithLock(user.getId()).getName());
+        Assertions.assertEquals(user2.getName(), userDao.getUserByIdWithLock(user2.getId()).getName());
+    }
+
+    @Test
     void getAll() {
         User user = new User("Tim_test");
         User user2 = new User("Tim1_test");

@@ -7,6 +7,7 @@ import money.transfer.dao.exception.UserException;
 import money.transfer.dao.model.Transfer;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +16,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+@Singleton
 public class TransferDaoImpl implements TransferDao {
 
     private final ConnectionAdaptor connectionAdaptor;

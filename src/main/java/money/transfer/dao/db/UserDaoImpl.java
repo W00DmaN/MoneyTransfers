@@ -23,6 +23,7 @@ public class UserDaoImpl implements UserDao {
     private static final String CREATE_USER = "INSERT INTO user (name, cents) VALUES (?, ?)";
     private static final String GET_ALL = "SELECT id, name, cents FROM user";
     private static final String GET_BY_ID = "SELECT id, name, cents FROM user WHERE id = ?";
+    private static final String GET_BY_ID_WITH_LOCK = "SELECT id, name, cents FROM user WHERE id = ? for update";
     private static final String DELETE_BY_ID = "DELETE FROM user WHERE id = ?";
     private static final String DELETE_ALL = "DELETE FROM user";
     private static final String UPDATE_USER = "UPDATE user SET name=?, cents=? WHERE id=?";
@@ -54,6 +55,23 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User getUserById(long id) {
         return execute(GET_BY_ID, statement -> {
+            statement.setLong(1, id);
+            statement.execute();
+            User result;
+            try (ResultSet resultSet = statement.getResultSet()) {
+                if (resultSet.next()) {
+                    result = getUserFromResultSet(resultSet);
+                } else {
+                    throw new UserNotFoundException(String.format("User with id = %s not found", id));
+                }
+            }
+            return result;
+        });
+    }
+
+    @Override
+    public User getUserByIdWithLock(long id) {
+        return execute(GET_BY_ID_WITH_LOCK, statement -> {
             statement.setLong(1, id);
             statement.execute();
             User result;

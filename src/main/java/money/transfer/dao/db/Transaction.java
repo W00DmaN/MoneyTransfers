@@ -19,7 +19,6 @@ public class Transaction<T> {
         try {
             try {
                 connection.setAutoCommit(false);
-                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
                 T result = transactional.execute();
                 connection.commit();
                 return result;

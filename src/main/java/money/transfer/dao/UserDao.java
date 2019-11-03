@@ -9,6 +9,8 @@ public interface UserDao {
 
     User getUserById(long id);
 
+    User getUserByIdWithLock(long id);
+
     void deleteById(long id);
 
     void deleteAll();

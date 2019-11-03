@@ -1,5 +1,5 @@
 micronaut:
   application:
-    name: hello-micronaut
+    name: money-transfer
   server:
-    port: 8081
+    port: 8080

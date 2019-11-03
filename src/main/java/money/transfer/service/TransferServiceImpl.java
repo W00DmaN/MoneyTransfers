@@ -33,8 +33,14 @@ public class TransferServiceImpl implements TransferService {
         TransferValidate.validate(fromUserId, toUserId, request.getCount());
         return TransferMapper.adaprToResp(
                 new Transaction<>(connectionAdaptor, () -> {
-                    User from = userDao.getUserById(fromUserId);
-                    User to = userDao.getUserById(toUserId);
+                    User from, to;
+                    if (fromUserId > toUserId) {
+                        from = userDao.getUserByIdWithLock(fromUserId);
+                        to = userDao.getUserByIdWithLock(toUserId);
+                    }  else {
+                        to = userDao.getUserByIdWithLock(toUserId);
+                        from = userDao.getUserByIdWithLock(fromUserId);
+                    }
                     if (from.getCents() >= request.getCount()) {
                         User updateUserFrom = new User(from.getId(), from.getName(), from.getCents() - request.getCount());
                         User updateUserTo = new User(to.getId(), to.getName(), to.getCents() + request.getCount());

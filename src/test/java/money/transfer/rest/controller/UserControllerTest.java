@@ -1,5 +1,6 @@
 package money.transfer.rest.controller;
 
+import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.annotation.MicronautTest;
 import money.transfer.RestClient;
 import money.transfer.rest.model.req.CreateUserRequest;
@@ -74,9 +75,7 @@ class UserControllerTest {
         CreateUserRequest request = new CreateUserRequest(userName);
         UserResponse response = restClient.createUser(request).blockingGet();
         restClient.deleteUserById(response.getId()).blockingGet();
-        assertThrows(Exception.class, () -> {
-            restClient.getUserById(response.getId()).blockingGet();
-        });
+        assertThrows(HttpClientResponseException.class, () -> restClient.getUserById(response.getId()).blockingGet());
     }
 
     @Test

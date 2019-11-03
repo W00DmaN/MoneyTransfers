@@ -1,6 +1,7 @@
 package money.transfer.dao.db;
 
 import money.transfer.dao.UserDao;
+import money.transfer.dao.exception.CreateUserException;
 import money.transfer.dao.exception.UserException;
 import money.transfer.dao.exception.UserNotFoundException;
 import money.transfer.dao.model.User;
@@ -38,13 +39,13 @@ public class UserDaoImpl implements UserDao {
             statement.setLong(2, user.getCents());
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
-                throw new UserException("Creating user failed, no rows affected.");
+                throw new CreateUserException("Creating user failed, no rows affected.");
             }
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return new User(generatedKeys.getLong(1), user.getName(), user.getCents());
                 } else {
-                    throw new UserException("Creating transfer failed, no ID obtained.");
+                    throw new CreateUserException("Creating user failed, no ID obtained.");
                 }
             }
         });

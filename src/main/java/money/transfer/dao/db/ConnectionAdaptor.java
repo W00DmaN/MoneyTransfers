@@ -2,7 +2,6 @@ package money.transfer.dao.db;
 
 import io.micronaut.runtime.context.scope.ThreadLocal;
 import money.transfer.dao.exception.MoneyTransferDaoException;
-import money.transfer.dao.exception.UserException;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -25,7 +24,7 @@ public class ConnectionAdaptor {
             try {
                 holder = dataSource.getConnection();
             } catch (SQLException e) {
-                throw new UserException(e);
+                throw new MoneyTransferDaoException(e);
             }
         }
         return holder;

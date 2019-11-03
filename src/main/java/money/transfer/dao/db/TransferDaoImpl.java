@@ -1,6 +1,7 @@
 package money.transfer.dao.db;
 
 import money.transfer.dao.TransferDao;
+import money.transfer.dao.exception.CreateTransferException;
 import money.transfer.dao.exception.TransferException;
 import money.transfer.dao.exception.UserException;
 import money.transfer.dao.model.Transfer;
@@ -36,14 +37,14 @@ public class TransferDaoImpl implements TransferDao {
             statement.setLong(3, count);
             int affectedRows = statement.executeUpdate();
             if (affectedRows == 0) {
-                throw new TransferException("Creating transfer failed, no rows affected.");
+                throw new CreateTransferException("Creating transfer failed, no rows affected.");
             }
 
             try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return new Transfer(generatedKeys.getLong(1), fromUserId, toUserId, count);
                 } else {
-                    throw new TransferException("Creating transfer failed, no ID obtained.");
+                    throw new CreateTransferException("Creating transfer failed, no ID obtained.");
                 }
             }
         });
@@ -82,7 +83,7 @@ public class TransferDaoImpl implements TransferDao {
 
     @Override
     public void deleteAll() {
-        execute(DELETE_ALL, statement -> statement.execute());
+        execute(DELETE_ALL, PreparedStatement::execute);
     }
 
     private Transfer getTransferFromResultSet(ResultSet resultSet) throws SQLException {

@@ -1,5 +1,6 @@
 package money.transfer.rest.controller;
 
+import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.annotation.MicronautTest;
 import money.transfer.RestClient;
 import money.transfer.rest.model.req.CreateUserRequest;
@@ -40,24 +41,43 @@ class TransferControllerTest {
 
     @Test
     void testTransferMoney() {
-
         long countCents = 100L;
 
-        CreateUserRequest userReq1 = new CreateUserRequest("Tim2_Test");
-        CreateUserRequest userReq2 = new CreateUserRequest("Tim2_Test");
-        UserResponse userResp1 = restClient.createUser(userReq1).blockingGet();
-        UserResponse userResp2 = restClient.createUser(userReq2).blockingGet();
-
-        DepositUserRequest depositUserRequest = new DepositUserRequest(countCents);
-
-        userResp1 = restClient.addMoney(userResp1.getId(), depositUserRequest).blockingGet();
+        UserResponse userResp1 = createUserWithMoney("Tim1_Test", countCents);
+        UserResponse userResp2 = createUserWithMoney("Tim2_Test", 0L);
 
         TransferRequest transferRequest = new TransferRequest(countCents);
         restClient.transferMoney(userResp1.getId(), userResp2.getId(), transferRequest).blockingGet();
 
         assertEquals(countCents, restClient.getUserById(userResp2.getId()).blockingGet().getCents());
-
     }
 
+    @Test
+    void testValidateTransferMoneyForUserId() {
+        long countCents = 100L;
 
+        UserResponse userResp = createUserWithMoney("Tim1_Test", countCents);
+
+        TransferRequest transferRequest = new TransferRequest(countCents);
+        assertThrows(HttpClientResponseException.class, () -> restClient.transferMoney(userResp.getId(), userResp.getId(), transferRequest).blockingGet());
+    }
+
+    @Test
+    void testValidateNegativTransferSumm() {
+        long countCents = 0L;
+
+        UserResponse user1 = createUserWithMoney("Tim1_Test", countCents);
+        UserResponse user2 = createUserWithMoney("Tim2_Test", 0L);
+
+        TransferRequest transferRequest = new TransferRequest(-1L);
+        assertThrows(HttpClientResponseException.class, () -> restClient.transferMoney(user1.getId(), user2.getId(), transferRequest).blockingGet());
+    }
+
+    private UserResponse createUserWithMoney(String userName, long summ) {
+        CreateUserRequest userReq = new CreateUserRequest("Tim1_Test");
+        UserResponse userResp = restClient.createUser(userReq).blockingGet();
+
+        DepositUserRequest depositUserRequest = new DepositUserRequest(summ);
+        return restClient.addMoney(userResp.getId(), depositUserRequest).blockingGet();
+    }
 }

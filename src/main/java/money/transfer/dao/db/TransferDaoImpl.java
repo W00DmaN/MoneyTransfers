@@ -102,6 +102,7 @@ public class TransferDaoImpl implements TransferDao {
     private <T> T execute(String query, StatementCallable<T> callable) {
         Connection connection = connectionAdaptor.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             return callable.call(statement);
         } catch (SQLException e) {
             throw new UserException(e);

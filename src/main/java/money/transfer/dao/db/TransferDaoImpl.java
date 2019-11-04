@@ -106,7 +106,7 @@ public class TransferDaoImpl implements TransferDao {
         try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             return callable.call(statement);
         } catch (SQLException e) {
-            throw new UserException(e);
+            throw new TransferException(e);
         }
     }
 }

@@ -21,13 +21,13 @@ public class UserServiceImpl implements UserService {
     private ConnectionAdaptor connectionAdaptor;
 
     @Inject
-    public UserServiceImpl(UserDao userDao, ConnectionAdaptor connectionAdaptor) {
+    public UserServiceImpl(final UserDao userDao, final ConnectionAdaptor connectionAdaptor) {
         this.connectionAdaptor = connectionAdaptor;
         this.userDao = userDao;
     }
 
     @Override
-    public UserResponse createUser(CreateUserRequest request) {
+    public UserResponse createUser(final CreateUserRequest request) {
         User user = new User(request.getName());
         return UserMapper.adaprToResp(
                 new Transaction<>(connectionAdaptor, () -> userDao.createUser(user)).execute()
@@ -41,14 +41,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse getById(long id) {
+    public UserResponse getById(final long id) {
         return UserMapper.adaprToResp(
                 new Transaction<>(connectionAdaptor, () -> userDao.getUserById(id)).execute()
         );
     }
 
     @Override
-    public void deleteById(long id) {
+    public void deleteById(final long id) {
         new Transaction<Void>(connectionAdaptor, () -> {
             userDao.deleteById(id);
             return null;

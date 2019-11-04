@@ -34,7 +34,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User createUser(User user) {
+    public User createUser(final User user) {
         return execute(CREATE_USER, statement -> {
             statement.setString(1, user.getName());
             statement.setLong(2, user.getCents());
@@ -53,7 +53,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User getUserById(long id) {
+    public User getUserById(final long id) {
         return execute(GET_BY_ID, statement -> {
             statement.setLong(1, id);
             statement.execute();
@@ -70,7 +70,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User getUserByIdWithLock(long id) {
+    public User getUserByIdWithLock(final long id) {
         return execute(GET_BY_ID_WITH_LOCK, statement -> {
             statement.setLong(1, id);
             statement.execute();
@@ -87,7 +87,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public void deleteById(long id) {
+    public void deleteById(final long id) {
         execute(DELETE_BY_ID, statement -> {
             statement.setLong(1, id);
             statement.execute();
@@ -118,7 +118,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User update(User user) {
+    public User update(final User user) {
         return execute(UPDATE_USER, statement -> {
             statement.setString(1, user.getName());
             statement.setLong(2, user.getCents());
@@ -129,7 +129,7 @@ public class UserDaoImpl implements UserDao {
     }
 
 
-    private User getUserFromResultSet(ResultSet resultSet) throws SQLException {
+    private User getUserFromResultSet(final ResultSet resultSet) throws SQLException {
         long id = resultSet.getLong("id");
         String name = resultSet.getString("name");
         long cents = resultSet.getLong("cents");
@@ -141,7 +141,7 @@ public class UserDaoImpl implements UserDao {
         T call(PreparedStatement statement) throws SQLException;
     }
 
-    private <T> T execute(String query, StatementCallable<T> callable) {
+    private <T> T execute(final String query, final StatementCallable<T> callable) {
         Connection connection = connectionAdaptor.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             return callable.call(statement);

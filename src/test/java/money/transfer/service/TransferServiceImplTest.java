@@ -9,8 +9,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @MicronautTest
 class TransferServiceImplTest {
@@ -21,7 +27,7 @@ class TransferServiceImplTest {
     UserService userService;
 
     @AfterEach
-    void after(){
+    void after() {
         transferService.deleteAll();
         userService.deleteAll();
     }
@@ -40,6 +46,47 @@ class TransferServiceImplTest {
 
         assertEquals(0L, user1.getCents());
         assertEquals(money * 2, user2.getCents());
+    }
+
+    @Test
+    void testConsistentParallelTransferMoney() {
+        long money = 1000L;
+        long transferMoney = 1L;
+        int countCallTransfer = 100;
+
+        UserResponse user1 = generateUser("Tim_Test1", money);
+        UserResponse user2 = generateUser("Tim_Test2", money);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+
+        Thread thread1 = new Thread(() -> {
+            TransferRequest transferRequest = new TransferRequest(transferMoney);
+            transferService.transferMoney(user1.getId(), user2.getId(), transferRequest);
+        });
+        Thread thread2 = new Thread(() -> {
+            TransferRequest transferRequest = new TransferRequest(transferMoney);
+            transferService.transferMoney(user2.getId(), user1.getId(), transferRequest);
+        });
+
+        List<Future> list = new ArrayList<>();
+
+        for (int i = 0; i < countCallTransfer; i++) {
+            list.add(executorService.submit(thread1));
+            list.add(executorService.submit(thread2));
+        }
+
+        list.parallelStream().forEach(x -> {
+            try {
+                x.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
+
+        long moneyUser1 = userService.getById(user1.getId()).getCents();
+        long moneyUser2 = userService.getById(user2.getId()).getCents();
+
+        assertEquals(money * 2, moneyUser1 + moneyUser2);
     }
 
     @Test

@@ -30,7 +30,7 @@ public class ConnectionAdaptor {
         return holder;
     }
 
-    public void closeConnection(Connection connection) {
+    public void closeConnection(final Connection connection) {
         try {
             connection.close();
         } catch (SQLException e) {

@@ -32,7 +32,7 @@ public class TransferDaoImpl implements TransferDao {
     }
 
     @Override
-    public Transfer create(long fromUserId, long toUserId, long count) {
+    public Transfer create(final long fromUserId, final long toUserId, final long count) {
         return execute(CREATE_TRANSFER, statement -> {
             statement.setLong(1, fromUserId);
             statement.setLong(2, toUserId);
@@ -53,7 +53,7 @@ public class TransferDaoImpl implements TransferDao {
     }
 
     @Override
-    public Transfer getById(long transferId) {
+    public Transfer getById(final long transferId) {
         return execute(GET_BY_ID, statement -> {
             statement.setLong(1, transferId);
             statement.execute();
@@ -88,7 +88,7 @@ public class TransferDaoImpl implements TransferDao {
         execute(DELETE_ALL, PreparedStatement::execute);
     }
 
-    private Transfer getTransferFromResultSet(ResultSet resultSet) throws SQLException {
+    private Transfer getTransferFromResultSet(final ResultSet resultSet) throws SQLException {
         long id = resultSet.getLong("id");
         long fromUserId = resultSet.getLong("from_user_id");
         long toUserId = resultSet.getLong("to_user_id");
@@ -101,7 +101,7 @@ public class TransferDaoImpl implements TransferDao {
         T call(PreparedStatement statement) throws SQLException;
     }
 
-    private <T> T execute(String query, StatementCallable<T> callable) {
+    private <T> T execute(final String query, final StatementCallable<T> callable) {
         Connection connection = connectionAdaptor.getConnection();
         try (PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             return callable.call(statement);

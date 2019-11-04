@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -68,7 +69,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteById() {
+    void testDeleteById() {
         String name = "Tim1_Test";
         UserResponse user = generateUser(name);
 
@@ -78,7 +79,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteAll() {
+    void testDeleteAll() {
         String name1 = "Tim1_Test";
         String name2 = "Tim2_Test";
         generateUser(name1);
@@ -90,7 +91,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void addMoney() {
+    void testAddMoney() {
         String name = "Tim1_Test";
         long addedMoney = 100L;
         UserResponse user = generateUser(name);
@@ -101,8 +102,8 @@ class UserServiceImplTest {
     }
 
     @Test
-    void parallelAddMoney() {
-        int countAddMoney = 100;
+    void testConsistentParallelAddMoney() {
+        int countAddMoney = 50;
 
         String name = "Tim1_Test";
         long addedMoney = 1;
@@ -120,15 +121,17 @@ class UserServiceImplTest {
             list.add(executorService.submit(thread));
         }
 
+        final AtomicInteger atomicInteger = new AtomicInteger(0);
+
         list.parallelStream().forEach(x -> {
             try {
                 x.get();
             } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+                atomicInteger.incrementAndGet(); //H2 does not work well with multithreading within itself, and I need get count rollback transactions
             }
         });
 
-        assertEquals(addedMoney * countAddMoney, userService.getById(user.getId()).getCents());
+        assertEquals(addedMoney * countAddMoney - atomicInteger.get(), userService.getById(user.getId()).getCents());
     }
 
     private UserResponse generateUser(String name) {

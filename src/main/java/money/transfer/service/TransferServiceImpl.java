@@ -29,7 +29,7 @@ public class TransferServiceImpl implements TransferService {
     }
 
     @Override
-    public TransferResponse transferMoney(long fromUserId, long toUserId, TransferRequest request) {
+    public TransferResponse transferMoney(final long fromUserId, final long toUserId, final TransferRequest request) {
         TransferValidate.validate(fromUserId, toUserId, request.getCount());
         return TransferMapper.adaprToResp(
                 new Transaction<>(connectionAdaptor, () -> {

@@ -5,6 +5,8 @@ import money.transfer.rest.model.req.CreateUserRequest;
 import money.transfer.rest.model.req.DepositUserRequest;
 import money.transfer.rest.model.req.TransferRequest;
 import money.transfer.rest.model.res.UserResponse;
+import money.transfer.service.exception.TransferInvalideSummException;
+import money.transfer.service.exception.ValidateTransferException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @MicronautTest
 class TransferServiceImplTest {
@@ -33,7 +36,7 @@ class TransferServiceImplTest {
     }
 
     @Test
-    void transferMoney() {
+    void positiveTransferMoney() {
         long money = 100L;
         UserResponse user1 = generateUser("Tim_Test1", money);
         UserResponse user2 = generateUser("Tim_Test2", money);
@@ -46,6 +49,26 @@ class TransferServiceImplTest {
 
         assertEquals(0L, user1.getCents());
         assertEquals(money * 2, user2.getCents());
+    }
+
+    @Test
+    void negativeSummTransferMoney() {
+        long money = 100L;
+        UserResponse user1 = generateUser("Tim_Test1", money);
+        UserResponse user2 = generateUser("Tim_Test2", money);
+
+        TransferRequest transferRequest = new TransferRequest(-1);
+        assertThrows(ValidateTransferException.class, () -> transferService.transferMoney(user1.getId(), user2.getId(), transferRequest));
+    }
+
+    @Test
+    void transferNonexistentMoney() {
+        long money = 100L;
+        UserResponse user1 = generateUser("Tim_Test1", money);
+        UserResponse user2 = generateUser("Tim_Test2", money);
+
+        TransferRequest transferRequest = new TransferRequest(money + 1);
+        assertThrows(TransferInvalideSummException.class, () -> transferService.transferMoney(user1.getId(), user2.getId(), transferRequest));
     }
 
     @Test

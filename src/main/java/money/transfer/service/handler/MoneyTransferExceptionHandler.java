@@ -6,6 +6,7 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.Produces;
 import io.micronaut.http.server.exceptions.ExceptionHandler;
 import money.transfer.dao.exception.UserNotFoundException;
+import money.transfer.service.exception.TransferInvalideSummException;
 import money.transfer.service.exception.ValidateTransferException;
 import money.transfer.service.exception.ValidateUserException;
 
@@ -27,6 +28,9 @@ public class MoneyTransferExceptionHandler implements ExceptionHandler<Throwable
             return HttpResponse.badRequest(new ErrorMessage(e.getMessage(), e.getClass().getName()));
         }
         if (e instanceof ValidateUserException) {
+            return HttpResponse.badRequest(new ErrorMessage(e.getMessage(), e.getClass().getName()));
+        }
+        if (e instanceof TransferInvalideSummException) {
             return HttpResponse.badRequest(new ErrorMessage(e.getMessage(), e.getClass().getName()));
         }
 

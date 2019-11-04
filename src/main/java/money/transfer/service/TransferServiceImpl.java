@@ -4,10 +4,10 @@ import money.transfer.dao.TransferDao;
 import money.transfer.dao.UserDao;
 import money.transfer.dao.db.ConnectionAdaptor;
 import money.transfer.dao.db.Transaction;
-import money.transfer.dao.exception.TransferException;
 import money.transfer.dao.model.User;
 import money.transfer.rest.model.req.TransferRequest;
 import money.transfer.rest.model.res.TransferResponse;
+import money.transfer.service.exception.TransferInvalideSummException;
 import money.transfer.service.mapper.TransferMapper;
 import money.transfer.service.validate.TransferValidate;
 
@@ -37,19 +37,19 @@ public class TransferServiceImpl implements TransferService {
                     if (fromUserId > toUserId) {
                         from = userDao.getUserByIdWithLock(fromUserId);
                         to = userDao.getUserByIdWithLock(toUserId);
-                    }  else {
+                    } else {
                         to = userDao.getUserByIdWithLock(toUserId);
                         from = userDao.getUserByIdWithLock(fromUserId);
                     }
-                    if (from.getCents() >= request.getCount()) {
-                        User updateUserFrom = new User(from.getId(), from.getName(), from.getCents() - request.getCount());
-                        User updateUserTo = new User(to.getId(), to.getName(), to.getCents() + request.getCount());
-                        userDao.update(updateUserFrom);
-                        userDao.update(updateUserTo);
-                        return transferDao.create(fromUserId, toUserId, request.getCount());
-                    } else {
-                        throw new TransferException("Insufficient funds for transfer money from userId:" + from.getId());
+                    if (from.getCents() < request.getCount()) {
+                        throw new TransferInvalideSummException("Insufficient funds for transfer money for userId:" + from.getId());
                     }
+                    User updateUserFrom = new User(from.getId(), from.getName(), from.getCents() - request.getCount());
+                    User updateUserTo = new User(to.getId(), to.getName(), to.getCents() + request.getCount());
+                    userDao.update(updateUserFrom);
+                    userDao.update(updateUserTo);
+                    return transferDao.create(fromUserId, toUserId, request.getCount());
+
                 }).execute()
         );
     }

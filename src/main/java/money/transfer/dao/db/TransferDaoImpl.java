@@ -3,7 +3,7 @@ package money.transfer.dao.db;
 import money.transfer.dao.TransferDao;
 import money.transfer.dao.exception.CreateTransferException;
 import money.transfer.dao.exception.TransferException;
-import money.transfer.dao.exception.UserException;
+import money.transfer.dao.exception.TransferNotFoundException;
 import money.transfer.dao.model.Transfer;
 
 import javax.inject.Inject;
@@ -62,7 +62,7 @@ public class TransferDaoImpl implements TransferDao {
                 if (resultSet.next()) {
                     result = getTransferFromResultSet(resultSet);
                 } else {
-                    throw new TransferException("Transfer with id = " + transferId + "not found");
+                    throw new TransferNotFoundException("Transfer with id = " + transferId + "not found");
                 }
             }
             return result;

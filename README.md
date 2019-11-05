@@ -56,7 +56,7 @@ GET http://localhost:8080/user/all
 
 ##### Add money for user
 
-PUT http://localhost:8080/user/{userId}}/deposit
+PUT http://localhost:8080/user/{userId}/deposit
 
 ###### request
 ```json
@@ -77,7 +77,7 @@ PUT http://localhost:8080/user/{userId}}/deposit
 
 ##### Transfer money
 
-POST http://localhost:8080/transfer/money/from/{uerId}}/to/{userId}
+POST http://localhost:8080/transfer/money/from/{uerId}/to/{userId}
 
 ###### request
 ```json

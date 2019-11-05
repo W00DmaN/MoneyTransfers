@@ -1,5 +1,6 @@
 package money.transfer.rest.controller;
 
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.annotation.MicronautTest;
 import money.transfer.RestClient;
@@ -34,48 +35,77 @@ class TransferControllerTest {
     }
 
     @Test
-    void testTransferMoneyWithNotCreatedUsers() {
-        TransferRequest request = new TransferRequest(100);
-        assertThrows(Exception.class, () -> restClient.transferMoney(1L, 1L, request).blockingGet());
+    void correctlyHandleExceptionTransferMoneyWithNotCreatedUserFrom() {
+        TransferRequest request = new TransferRequest(100L);
+        UserResponse userTo = createUserWithMoney("Tim1_Test", 100L);
+
+        HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> restClient.transferMoney(-1L, userTo.getId(), request).blockingGet());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     }
 
     @Test
-    void testTransferMoney() {
+    void correctlyHandleExceptionTransferMoneyWithNotCreatedUserTo() {
+        TransferRequest request = new TransferRequest(100L);
+        UserResponse userFrom = createUserWithMoney("Tim1_Test", 100L);
+
+        HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> restClient.transferMoney(userFrom.getId(), -1L, request).blockingGet());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+    }
+
+    @Test
+    void positiveTransferMoney() {
         long countCents = 100L;
 
-        UserResponse userResp1 = createUserWithMoney("Tim1_Test", countCents);
-        UserResponse userResp2 = createUserWithMoney("Tim2_Test", 0L);
+        UserResponse userFrom = createUserWithMoney("Tim1_Test", countCents);
+        UserResponse userTo = createUserWithMoney("Tim2_Test", 0L);
 
         TransferRequest transferRequest = new TransferRequest(countCents);
-        restClient.transferMoney(userResp1.getId(), userResp2.getId(), transferRequest).blockingGet();
+        restClient.transferMoney(userFrom.getId(), userTo.getId(), transferRequest).blockingGet();
 
-        assertEquals(countCents, restClient.getUserById(userResp2.getId()).blockingGet().getCents());
+        assertEquals(countCents, restClient.getUserById(userTo.getId()).blockingGet().getCents());
+        assertEquals(0L, restClient.getUserById(userFrom.getId()).blockingGet().getCents());
     }
 
     @Test
-    void testValidateTransferMoneyForUserId() {
+    void correctlyHandleExceptionTransferMoneyToMyself() {
         long countCents = 100L;
 
-        UserResponse userResp = createUserWithMoney("Tim1_Test", countCents);
+        UserResponse user = createUserWithMoney("Tim1_Test", countCents);
 
         TransferRequest transferRequest = new TransferRequest(countCents);
-        assertThrows(HttpClientResponseException.class, () -> restClient.transferMoney(userResp.getId(), userResp.getId(), transferRequest).blockingGet());
+        HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> restClient.transferMoney(user.getId(), user.getId(), transferRequest).blockingGet());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
 
     @Test
-    void testValidateNegativTransferSumm() {
-        long countCents = 0L;
+    void correctlyHandleExceptionTransferMoneyWithNegativeSumm() {
+        long countCents = 100L;
 
-        UserResponse user1 = createUserWithMoney("Tim1_Test", countCents);
-        UserResponse user2 = createUserWithMoney("Tim2_Test", 0L);
+        UserResponse userFrom = createUserWithMoney("Tim1_Test", countCents);
+        UserResponse userTo = createUserWithMoney("Tim2_Test", 0L);
 
         TransferRequest transferRequest = new TransferRequest(-1L);
-        assertThrows(HttpClientResponseException.class, () -> restClient.transferMoney(user1.getId(), user2.getId(), transferRequest).blockingGet());
+        HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> restClient.transferMoney(userFrom.getId(), userTo.getId(), transferRequest).blockingGet());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    }
+
+    @Test
+    void correctlyHandleExceptionTransferMoneyInsufficientCountForUserFrom() {
+        long countCents = 100L;
+
+        UserResponse userFrom = createUserWithMoney("Tim1_Test", countCents);
+        UserResponse userTo = createUserWithMoney("Tim2_Test", countCents);
+
+        TransferRequest transferRequest = new TransferRequest(countCents + 1);
+        HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> restClient.transferMoney(userFrom.getId(), userTo.getId(), transferRequest).blockingGet());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
 
     private UserResponse createUserWithMoney(String userName, long summ) {
         CreateUserRequest userReq = new CreateUserRequest("Tim1_Test");
         UserResponse userResp = restClient.createUser(userReq).blockingGet();
+
+        if (summ < 1) return userResp;
 
         DepositUserRequest depositUserRequest = new DepositUserRequest(summ);
         return restClient.addMoney(userResp.getId(), depositUserRequest).blockingGet();

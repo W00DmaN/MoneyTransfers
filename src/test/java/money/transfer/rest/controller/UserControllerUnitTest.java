@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,7 +20,7 @@ public class UserControllerUnitTest {
     private UserService userService = mock(UserService.class);
     private UserController controller = new UserController(userService);
 
-    private UserResponse userResponse = new UserResponse(1L, "Tim", 0l);
+    private UserResponse userResponse = new UserResponse(1L, "Tim", 0L);
 
     @Test
     void testGetUserById() {
@@ -38,12 +37,6 @@ public class UserControllerUnitTest {
         verify(userService).getAll();
         assertEquals(1, responses.size());
         assertEquals(userResponse, responses.get(0));
-    }
-
-    @Test
-    void testDeleteById() {
-        controller.deleteUser(userResponse.getId());
-        verify(userService, times(1)).deleteById(eq(userResponse.getId()));
     }
 
     @Test

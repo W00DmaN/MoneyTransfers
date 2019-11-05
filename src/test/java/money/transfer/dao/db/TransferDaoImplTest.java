@@ -3,7 +3,8 @@ package money.transfer.dao.db;
 import io.micronaut.test.annotation.MicronautTest;
 import money.transfer.dao.TransferDao;
 import money.transfer.dao.UserDao;
-import money.transfer.dao.exception.MoneyTransferDaoException;
+import money.transfer.dao.exception.TransferException;
+import money.transfer.dao.exception.TransferNotFoundException;
 import money.transfer.dao.model.Transfer;
 import money.transfer.dao.model.User;
 import org.junit.jupiter.api.AfterEach;
@@ -31,12 +32,12 @@ class TransferDaoImplTest {
     }
 
     @Test
-    void testCreateTransferForNotExistUsers() {
-        assertThrows(MoneyTransferDaoException.class, () -> transferDao.create(1l, 1l, 1l));
+    void createTransferForNotExistFromUser() {
+        assertThrows(TransferException.class, () -> transferDao.create(1L, 1L, 1L));
     }
 
     @Test
-    void testCreateTranferWithExustUsers() {
+    void positiveCreateTransferWithExistUsers() {
         User fromUser = generateUser("FromUser_Test");
         User toUser = generateUser("ToUser_Test");
         long summ = 100L;
@@ -47,7 +48,7 @@ class TransferDaoImplTest {
     }
 
     @Test
-    void testGetTransferByTransferId() {
+    void positiveGetTransferByTransferId() {
         User fromUser = generateUser("FromUser_Test");
         User toUser = generateUser("ToUser_Test");
         long summ = 100L;
@@ -57,7 +58,12 @@ class TransferDaoImplTest {
     }
 
     @Test
-    void testGetAllTransfers() {
+    void getTransferByTransferIdForNotExistTransferId() {
+        assertThrows(TransferNotFoundException.class, () -> transferDao.getById(-1L));
+    }
+
+    @Test
+    void positiveGetAllTransfers() {
         User fromUser = generateUser("FromUser_Test");
         User toUser = generateUser("ToUser_Test");
         long summ = 100L;
@@ -68,6 +74,12 @@ class TransferDaoImplTest {
         assertEquals(2, results.size());
         assertTrue(results.contains(transfer1));
         assertTrue(results.contains(transfer2));
+    }
+
+    @Test
+    void getAllTransferWithoutTransferInSystem() {
+        List<Transfer> results = transferDao.getAllTransfers();
+        assertTrue(results.isEmpty());
     }
 
     private User generateUser(String name) {

@@ -1,6 +1,7 @@
 package money.transfer.service;
 
 import io.micronaut.test.annotation.MicronautTest;
+import money.transfer.dao.exception.UserNotFoundException;
 import money.transfer.rest.model.req.CreateUserRequest;
 import money.transfer.rest.model.req.DepositUserRequest;
 import money.transfer.rest.model.req.TransferRequest;
@@ -72,6 +73,24 @@ class TransferServiceImplTest {
     }
 
     @Test
+    void nonexistentFromUserTransferMoney() {
+        long money = 100L;
+        UserResponse user1 = generateUser("Tim_Test1", money);
+
+        TransferRequest transferRequest = new TransferRequest(money);
+        assertThrows(UserNotFoundException.class, () -> transferService.transferMoney(-1L, user1.getId(), transferRequest));
+    }
+
+    @Test
+    void nonexistentToUserTransferMoney() {
+        long money = 100L;
+        UserResponse user1 = generateUser("Tim_Test1", money);
+
+        TransferRequest transferRequest = new TransferRequest(money);
+        assertThrows(UserNotFoundException.class, () -> transferService.transferMoney(user1.getId(), -1L, transferRequest));
+    }
+
+    @Test
     void testConsistentParallelTransferMoney() {
         long money = 1000L;
         long transferMoney = 1L;
@@ -110,10 +129,6 @@ class TransferServiceImplTest {
         long moneyUser2 = userService.getById(user2.getId()).getCents();
 
         assertEquals(money * 2, moneyUser1 + moneyUser2);
-    }
-
-    @Test
-    void deleteAll() {
     }
 
     private UserResponse generateUser(String name, long money) {

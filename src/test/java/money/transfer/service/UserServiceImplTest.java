@@ -5,6 +5,7 @@ import money.transfer.dao.exception.UserNotFoundException;
 import money.transfer.rest.model.req.CreateUserRequest;
 import money.transfer.rest.model.req.DepositUserRequest;
 import money.transfer.rest.model.res.UserResponse;
+import money.transfer.service.exception.ValidateUserException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +35,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createUser() {
+    void positiveCreateUser() {
         String name = "Tim_Test";
         UserResponse result = generateUser(name);
         assertEquals(name, result.getName());
@@ -42,7 +43,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getAll() {
+    void positiveGetAll() {
         String name1 = "Tim1_Test";
         String name2 = "Tim2_Test";
         UserResponse user1 = generateUser(name1);
@@ -58,7 +59,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getById() {
+    void positiveGetById() {
         String name1 = "Tim1_Test";
         String name2 = "Tim2_Test";
         UserResponse user1 = generateUser(name1);
@@ -69,17 +70,12 @@ class UserServiceImplTest {
     }
 
     @Test
-    void testDeleteById() {
-        String name = "Tim1_Test";
-        UserResponse user = generateUser(name);
-
-        userService.deleteById(user.getId());
-
-        assertThrows(UserNotFoundException.class, () -> userService.getById(user.getId()));
+    void nonexistentUserGetById() {
+        assertThrows(UserNotFoundException.class, () -> userService.getById(-1L));
     }
 
     @Test
-    void testDeleteAll() {
+    void positiveDeleteAll() {
         String name1 = "Tim1_Test";
         String name2 = "Tim2_Test";
         generateUser(name1);
@@ -91,7 +87,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void testAddMoney() {
+    void positiveAddMoney() {
         String name = "Tim1_Test";
         long addedMoney = 100L;
         UserResponse user = generateUser(name);
@@ -99,6 +95,20 @@ class UserServiceImplTest {
         UserResponse result = userService.addMoney(user.getId(), depositUserRequest);
 
         assertEquals(addedMoney, result.getCents() - user.getCents());
+    }
+
+    @Test
+    void nonexistentUserAddMoney() {
+        DepositUserRequest depositUserRequest = new DepositUserRequest(100L);
+        assertThrows(UserNotFoundException.class, () -> userService.addMoney(-1L, depositUserRequest));
+    }
+
+    @Test
+    void negativeAddMoney() {
+        String name = "Tim1_Test";
+        UserResponse user = generateUser(name);
+        DepositUserRequest depositUserRequest = new DepositUserRequest(-1L);
+        assertThrows(ValidateUserException.class, () -> userService.addMoney(user.getId(), depositUserRequest));
     }
 
     @Test
@@ -131,7 +141,7 @@ class UserServiceImplTest {
             }
         });
 
-        assertEquals(addedMoney * countAddMoney - atomicInteger.get(), userService.getById(user.getId()).getCents());
+        assertEquals(addedMoney * countAddMoney - atomicInteger.get() * addedMoney, userService.getById(user.getId()).getCents());
     }
 
     private UserResponse generateUser(String name) {

@@ -11,5 +11,5 @@ public class TransferResponse {
     private long id;
     private long userFrom;
     private long userTo;
-    private long count;
+    private long summ;
 }

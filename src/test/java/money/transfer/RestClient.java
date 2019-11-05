@@ -15,7 +15,6 @@
  */
 package money.transfer;
 
-import io.micronaut.http.annotation.Delete;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Put;
@@ -42,9 +41,6 @@ public interface RestClient {
 
     @Get("/user/{id}")
     Single<UserResponse> getUserById(long id);
-
-    @Delete("/user/{id}")
-    Single<Void> deleteUserById(long id);
 
     @Put("/user/{id}/deposit")
     Single<UserResponse> addMoney(long id, DepositUserRequest depositUserRequest);

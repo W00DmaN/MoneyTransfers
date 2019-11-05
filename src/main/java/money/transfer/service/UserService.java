@@ -14,8 +14,6 @@ public interface UserService {
 
     UserResponse getById(long id);
 
-    void deleteById(long id);
-
     void deleteAll();
 
     UserResponse addMoney(long id, DepositUserRequest depositUserRequest);

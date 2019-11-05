@@ -8,6 +8,7 @@ import money.transfer.rest.model.req.CreateUserRequest;
 import money.transfer.rest.model.req.DepositUserRequest;
 import money.transfer.rest.model.res.UserResponse;
 import money.transfer.service.mapper.UserMapper;
+import money.transfer.service.validate.UserValidate;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -48,14 +49,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteById(final long id) {
-        new Transaction<Void>(connectionAdaptor, () -> {
-            userDao.deleteById(id);
-            return null;
-        }).execute();
-    }
-
-    @Override
     public void deleteAll() {
         new Transaction<Void>(connectionAdaptor, () -> {
             userDao.deleteAll();
@@ -65,6 +58,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse addMoney(long id, DepositUserRequest request) {
+        UserValidate.validateAddMoneySumm(request.getCountCents());
         return UserMapper.adaprToResp(
                 new Transaction<>(connectionAdaptor, () -> {
                     User user = userDao.getUserByIdWithLock(id);

@@ -87,15 +87,6 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public void deleteById(final long id) {
-        execute(DELETE_BY_ID, statement -> {
-            statement.setLong(1, id);
-            statement.execute();
-            return null;
-        });
-    }
-
-    @Override
     public void deleteAll() {
         execute(DELETE_ALL, statement -> {
             statement.execute();

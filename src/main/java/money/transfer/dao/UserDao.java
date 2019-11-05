@@ -11,8 +11,6 @@ public interface UserDao {
 
     User getUserByIdWithLock(long id);
 
-    void deleteById(long id);
-
     void deleteAll();
 
     List<User> getAll();

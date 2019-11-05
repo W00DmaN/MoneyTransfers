@@ -30,7 +30,7 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public TransferResponse transferMoney(final long fromUserId, final long toUserId, final TransferRequest request) {
-        TransferValidate.validate(fromUserId, toUserId, request.getCount());
+        TransferValidate.validate(fromUserId, toUserId, request.getSumm());
         return TransferMapper.adaprToResp(
                 new Transaction<>(connectionAdaptor, () -> {
                     User from, to;
@@ -41,14 +41,14 @@ public class TransferServiceImpl implements TransferService {
                         to = userDao.getUserByIdWithLock(toUserId);
                         from = userDao.getUserByIdWithLock(fromUserId);
                     }
-                    if (from.getCents() < request.getCount()) {
+                    if (from.getCents() < request.getSumm()) {
                         throw new TransferInvalideSummException("Insufficient funds for transfer money for userId:" + from.getId());
                     }
-                    User updateUserFrom = new User(from.getId(), from.getName(), from.getCents() - request.getCount());
-                    User updateUserTo = new User(to.getId(), to.getName(), to.getCents() + request.getCount());
+                    User updateUserFrom = new User(from.getId(), from.getName(), from.getCents() - request.getSumm());
+                    User updateUserTo = new User(to.getId(), to.getName(), to.getCents() + request.getSumm());
                     userDao.update(updateUserFrom);
                     userDao.update(updateUserTo);
-                    return transferDao.create(fromUserId, toUserId, request.getCount());
+                    return transferDao.create(fromUserId, toUserId, request.getSumm());
 
                 }).execute()
         );

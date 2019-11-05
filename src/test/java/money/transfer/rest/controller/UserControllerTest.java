@@ -1,5 +1,6 @@
 package money.transfer.rest.controller;
 
+import io.micronaut.http.HttpStatus;
 import io.micronaut.http.client.exceptions.HttpClientResponseException;
 import io.micronaut.test.annotation.MicronautTest;
 import money.transfer.RestClient;
@@ -26,70 +27,85 @@ class UserControllerTest {
     private UserService userService;
 
     @AfterEach
-    void after(){
+    void after() {
         userService.deleteAll();
     }
 
     @Test
-    void createUser() {
+    void positiveCreateUser() {
         String userName = "Tim _test";
-        CreateUserRequest req = new CreateUserRequest(userName);
-        UserResponse resp = restClient.createUser(req).blockingGet();
-        assertEquals(userName, resp.getName());
+        UserResponse user = createUser(userName);
+        assertEquals(userName, user.getName());
     }
 
     @Test
-    void getAllUsers() {
+    void positiveGetAllUsers() {
         String userName = "Tim_test";
         String userName2 = "Tim2_test";
-        CreateUserRequest req = new CreateUserRequest(userName);
-        UserResponse userResponse1 = restClient.createUser(req).blockingGet();
-        req = new CreateUserRequest(userName2);
-        UserResponse userResponse2 = restClient.createUser(req).blockingGet();
+        UserResponse user1 = createUser(userName);
+        UserResponse user2 = createUser(userName2);
 
         List<UserResponse> result = restClient.getAllUsers().blockingGet();
 
         assertEquals(2, result.size());
-        assertTrue(result.contains(userResponse1), "getAllUser haven't user=" + userResponse1.toString());
-        assertTrue(result.contains(userResponse2));
+        assertTrue(result.contains(user1));
+        assertTrue(result.contains(user2));
     }
 
     @Test
-    void getAllUserFromEmpty() {
+    void getAllUserWhenSystemWithoutUsers() {
         List<UserResponse> responses = restClient.getAllUsers().blockingGet();
         assertEquals(0, responses.size());
     }
 
     @Test
-    void getUserById() {
+    void positiveGetUserById() {
         String userName = "Tim_test";
-        CreateUserRequest request = new CreateUserRequest(userName);
-        UserResponse response = restClient.createUser(request).blockingGet();
-        UserResponse result = restClient.getUserById(response.getId()).blockingGet();
-        assertEquals(response, result);
+        UserResponse user = createUser(userName);
+        UserResponse result = restClient.getUserById(user.getId()).blockingGet();
+        assertEquals(user, result);
     }
 
     @Test
-    void deleteUserById() {
-        String userName = "Tim_test";
-        CreateUserRequest request = new CreateUserRequest(userName);
-        UserResponse response = restClient.createUser(request).blockingGet();
-        restClient.deleteUserById(response.getId()).blockingGet();
-        assertThrows(HttpClientResponseException.class, () -> restClient.getUserById(response.getId()).blockingGet());
+    void correctlyHandleExceptionGetUserByNonexistentId() {
+        HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> restClient.getUserById(-1L).blockingGet());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
     }
 
     @Test
-    void addMoney(){
+    void positiveAddMoney() {
         String userName = "Tim_test";
-        CreateUserRequest request = new CreateUserRequest(userName);
-        UserResponse response = restClient.createUser(request).blockingGet();
-        assertEquals(0L, response.getCents());
+        UserResponse user = createUser(userName);
+        assertEquals(0L, user.getCents());
 
         long depositSumm = 100L;
         DepositUserRequest depositUserRequest = new DepositUserRequest(depositSumm);
-        restClient.addMoney(response.getId(), depositUserRequest).blockingGet();
+        restClient.addMoney(user.getId(), depositUserRequest).blockingGet();
 
-        UserResponse result = restClient.getUserById(response.getId()).blockingGet();
-        assertEquals(depositSumm, result.getCents());
+        assertEquals(depositSumm, restClient.getUserById(user.getId()).blockingGet().getCents());
+
+        restClient.addMoney(user.getId(), depositUserRequest).blockingGet();
+
+        assertEquals(depositSumm * 2, restClient.getUserById(user.getId()).blockingGet().getCents());
+    }
+
+    @Test
+    void correctlyHandleExceptionAddMoneyNonexistentUser() {
+        DepositUserRequest depositUserRequest = new DepositUserRequest(100L);
+        HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> restClient.addMoney(-1L, depositUserRequest).blockingGet());
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+    }
+
+    @Test
+    void correctlyHandleExceptionAddMoneyWithNegativeSumm() {
+        DepositUserRequest depositUserRequest = new DepositUserRequest(-1L);
+        UserResponse user = createUser("Tim_Test");
+        HttpClientResponseException exception = assertThrows(HttpClientResponseException.class, () -> restClient.addMoney(user.getId(), depositUserRequest).blockingGet());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+    }
+
+    private UserResponse createUser(String name) {
+        CreateUserRequest request = new CreateUserRequest(name);
+        return restClient.createUser(request).blockingGet();
     }
 }

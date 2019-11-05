@@ -1,6 +1,5 @@
 dependency-reduced-pom.xml
 /src/main/resources/application.properties
-/src/main/resources/logback.xml
 /.idea
 /.mvn
 /target

@@ -4,7 +4,7 @@ This repository is simple app for transfer money
 
 ### API 
 
-##### Create user 
+##### Get health status
 
 GET http://localhost:8080/health
 

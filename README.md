@@ -6,6 +6,17 @@ This repository is simple app for transfer money
 
 ##### Create user 
 
+GET http://localhost:8080/health
+
+###### response
+```
+0
+```
+
+
+
+##### Create user 
+
 POST http://localhost:8080/user
 
 ###### request
